@@ -73,27 +73,41 @@ def supabase_fetch_student(matricule, active=True):
     query = supabase.table('students').select('*').eq('matricule', matricule)
     if active:
         query = query.eq('is_active', True)
-    result = query.execute()
-    if result.error or not result.data:
+    try:
+        result = query.execute()
+        if not result.data:
+            return None
+        return result.data[0]
+    except Exception:
         return None
-    return result.data[0]
 
 
 def supabase_fetch_machine(machine_code):
     if not is_supabase_enabled():
         return None
-    result = supabase.table('machines').select('*').eq('machine_code', machine_code).execute()
-    if result.error or not result.data:
+    try:
+        result = supabase.table('machines').select('*').eq('machine_code', machine_code).execute()
+        if not result.data:
+            return None
+        return result.data[0]
+    except Exception:
         return None
-    return result.data[0]
 
 
 def supabase_insert(table, record):
     if not is_supabase_enabled():
         return None
     result = supabase.table(table).insert(record).execute()
-    if result.error:
-        raise RuntimeError(result.error.message if hasattr(result.error, 'message') else str(result.error))
+    return result.data
+
+
+def supabase_update(table, match, record):
+    if not is_supabase_enabled():
+        return None
+    query = supabase.table(table).update(record)
+    for k, v in match.items():
+        query = query.eq(k, v)
+    result = query.execute()
     return result.data
 
 
@@ -413,8 +427,6 @@ def admin_get_students():
     try:
         if is_supabase_enabled():
             result = supabase.table('students').select('*').order('created_at', desc=True).execute()
-            if result.error:
-                raise RuntimeError(result.error.message if hasattr(result.error, 'message') else str(result.error))
             students = [serialize_row(row) for row in (result.data or [])]
             if search:
                 students = [s for s in students if any(search in str(s.get(field, '') or '').lower() for field in ['matricule', 'nom', 'postnom', 'prenom', 'faculte', 'filiere', 'promotion'])]
@@ -455,14 +467,8 @@ def admin_summary():
     try:
         if is_supabase_enabled():
             students_result = supabase.table('students').select('*').execute()
-            if students_result.error:
-                raise RuntimeError(students_result.error.message if hasattr(students_result.error, 'message') else str(students_result.error))
             machines_result = supabase.table('machines').select('*').execute()
-            if machines_result.error:
-                raise RuntimeError(machines_result.error.message if hasattr(machines_result.error, 'message') else str(machines_result.error))
             inspections_result = supabase.table('inspection').select('*').execute()
-            if inspections_result.error:
-                raise RuntimeError(inspections_result.error.message if hasattr(inspections_result.error, 'message') else str(inspections_result.error))
 
             students = students_result.data or []
             machines = machines_result.data or []
