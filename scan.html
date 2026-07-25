@@ -79,6 +79,24 @@
             font-weight: 400;
         }
 
+        .logo-card {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .brand-logo {
+            width: 52px;
+            height: 52px;
+            object-fit: contain;
+            border-radius: 18px;
+            background: rgba(255,255,255,0.12);
+            padding: 8px;
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.12);
+        }
+
         .machine-badge {
             display: inline-flex;
             align-items: center;
@@ -438,8 +456,13 @@
     <div class="container">
         <!-- En-tête -->
         <div class="header">
-            <h1>Université Protestante de Lubumbashi</h1>
-            <p>Laboratoire Informatique — Système SmartLocker</p>
+            <div class="logo-card">
+                <img src="/logo.png" alt="Logo UPL" class="brand-logo" onerror="this.style.display='none'">
+                <div>
+                    <h1>Université Protestante de Lubumbashi</h1>
+                    <p>Laboratoire Informatique — SmartLocker</p>
+                </div>
+            </div>
             <div class="machine-badge">
                 <span class="dot"></span>
                 <span id="display-pc-name">POSTE : {{ pc_code }}</span>
@@ -594,13 +617,11 @@
                             <span class="input-icon">🏛️</span>
                             <select id="reg_faculte" required>
                                 <option value="" disabled selected>Sélectionner la faculté...</option>
-                                <option value="Sciences et Technologies">Sciences et Technologies</option>
-                                <option value="Sciences Économiques et Gestion">Sciences Économiques et Gestion</option>
-                                <option value="Droit">Droit</option>
-                                <option value="Médecine">Médecine</option>
+                                <option value="Faculté des Sciences Informatique">Faculté des Sciences Informatique</option>
+                                <option value="École d'Architecture">École d'Architecture</option>
                                 <option value="Polytechnique">Polytechnique</option>
-                                <option value="Théologie">Théologie</option>
-                                <option value="Sciences Sociales">Sciences Sociales</option>
+                                <option value="Géomine">Géomine</option>
+                                <option value="Faculté des Sciences Économiques">Faculté des Sciences Économiques</option>
                             </select>
                         </div>
                     </div>
@@ -617,14 +638,7 @@
                             <label for="reg_promotion">Promotion</label>
                             <div class="input-wrapper">
                                 <span class="input-icon">📊</span>
-                                <select id="reg_promotion" required>
-                                    <option value="" disabled selected>Niveau...</option>
-                                    <option value="L1 LMD">L1 LMD</option>
-                                    <option value="L2 LMD">L2 LMD</option>
-                                    <option value="L3 LMD">L3 LMD</option>
-                                    <option value="M1">M1</option>
-                                    <option value="M2">M2</option>
-                                </select>
+                                <input type="text" id="reg_promotion" placeholder="Ex: L3 Informatique" required>
                             </div>
                         </div>
                     </div>
