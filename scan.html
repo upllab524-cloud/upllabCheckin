@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Déverrouillage Poste - UPL Labo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #002677;
+            --primary-light: #1d4ed8;
+            --accent: #f59e0b;
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #002677 100%);
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --success: #10b981;
+            --danger: #ef4444;
+            --radius: 16px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: var(--bg-gradient);
+            background-attachment: fixed;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px 16px;
+            color: var(--text-main);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px;
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border-radius: var(--radius);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.2);
+            overflow: hidden;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .header {
+            background: linear-gradient(135deg, #002677 0%, #1e3a8a 100%);
+            padding: 28px 24px;
+            text-align: center;
+            color: white;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            margin-bottom: 6px;
+        }
+
+        .header p {
+            font-size: 13px;
+            color: #93c5fd;
+            font-weight: 400;
+        }
+
+        .machine-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            padding: 6px 16px;
+            border-radius: 20px;
+            margin-top: 14px;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .machine-badge .dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--accent);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--accent);
+        }
+
+        .form-body {
+            padding: 24px;
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--primary);
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #e2e8f0;
+        }
+
+        .input-group {
+            margin-bottom: 16px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 6px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            padding: 12px 14px 12px 40px;
+            border: 1.5px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 14px;
+            color: var(--text-main);
+            background: #f8fafc;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+
+        .input-wrapper input:focus {
+            border-color: var(--primary-light);
+            background: #ffffff;
+            box-shadow: 0 0 0 4px rgba(29, 78, 216, 0.1);
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 16px;
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        /* Checklist Grid */
+        .checklist-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+
+        .check-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #f8fafc;
+            border: 1.5px solid var(--border-color);
+            padding: 12px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .check-card:hover {
+            background: #ffffff;
+            border-color: #cbd5e1;
+        }
+
+        .check-card.checked {
+            border-color: #93c5fd;
+            background: #eff6ff;
+        }
+
+        .check-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .check-icon {
+            font-size: 20px;
+        }
+
+        .check-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-main);
+        }
+
+        /* Toggle Switch */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #cbd5e1;
+            transition: .3s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        input:checked + .slider {
+            background-color: var(--primary-light);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(20px);
+        }
+
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1.5px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 13px;
+            background: #f8fafc;
+            resize: vertical;
+            min-height: 70px;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        textarea:focus {
+            border-color: var(--primary-light);
+            background: #ffffff;
+            box-shadow: 0 0 0 4px rgba(29, 78, 216, 0.1);
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #002677 0%, #1d4ed8 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 38, 119, 0.3);
+            transition: all 0.2s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(0, 38, 119, 0.4);
+        }
+
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .spinner {
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s linear infinite;
+            display: none;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: white;
+            padding: 14px 20px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 1000;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            max-width: 90%;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .toast.success {
+            border-left: 5px solid var(--success);
+            color: #065f46;
+        }
+
+        .toast.error {
+            border-left: 5px solid var(--danger);
+            color: #991b1b;
+        }
+
+        .footer-note {
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 18px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="toast" class="toast">
+        <span id="toast-icon">✨</span>
+        <span id="toast-message">Notification</span>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>Université Protestante de Lubumbashi</h1>
+            <p>Laboratoire Informatique — SmartLocker</p>
+            <div class="machine-badge">
+                <span class="dot"></span>
+                <span id="display-pc-name">{{ pc_code }}</span>
+            </div>
+        </div>
+
+        <form id="unlockForm" class="form-body">
+            <input type="hidden" id="machine_code" value="{{ pc_code }}">
+
+            <!-- SECTION 1: AUTHENTIFICATION -->
+            <div class="section-title">
+                1. Authentification Étudiant
+            </div>
+
+            <div class="input-group">
+                <label for="matricule">Matricule Étudiant</label>
+                <div class="input-wrapper">
+                    <span class="input-icon">👤</span>
+                    <input type="text" id="matricule" placeholder="Ex: 2024-UPL-001" required autocomplete="username">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="password">Mot de passe</label>
+                <div class="input-wrapper">
+                    <span class="input-icon">🔒</span>
+                    <input type="password" id="password" placeholder="••••••••" required autocomplete="current-password">
+                </div>
+            </div>
+
+            <!-- SECTION 2: CHECKLIST -->
+            <div class="section-title">
+                2. État du Matériel (Check-list)
+            </div>
+
+            <div class="checklist-grid">
+                <div class="check-card checked" onclick="toggleSwitch('has_mouse')">
+                    <div class="check-info">
+                        <span class="check-icon">🐭</span>
+                        <span class="check-label">Souris présente</span>
+                    </div>
+                    <label class="switch" onclick="event.stopPropagation()">
+                        <input type="checkbox" id="has_mouse" checked onchange="updateCardState('has_mouse')">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="check-card checked" onclick="toggleSwitch('has_keyboard')">
+                    <div class="check-info">
+                        <span class="check-icon">⌨️</span>
+                        <span class="check-label">Clavier présent</span>
+                    </div>
+                    <label class="switch" onclick="event.stopPropagation()">
+                        <input type="checkbox" id="has_keyboard" checked onchange="updateCardState('has_keyboard')">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="check-card checked" onclick="toggleSwitch('has_power_cable')">
+                    <div class="check-info">
+                        <span class="check-icon">🔌</span>
+                        <span class="check-label">Câble d'alimentation</span>
+                    </div>
+                    <label class="switch" onclick="event.stopPropagation()">
+                        <input type="checkbox" id="has_power_cable" checked onchange="updateCardState('has_power_cable')">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="check-card checked" onclick="toggleSwitch('has_hdmi_cable')">
+                    <div class="check-info">
+                        <span class="check-icon">🖥️</span>
+                        <span class="check-label">Câble HDMI / Écran</span>
+                    </div>
+                    <label class="switch" onclick="event.stopPropagation()">
+                        <input type="checkbox" id="has_hdmi_cable" checked onchange="updateCardState('has_hdmi_cable')">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="check-card checked" onclick="toggleSwitch('has_power_extension')">
+                    <div class="check-info">
+                        <span class="check-icon">⚡</span>
+                        <span class="check-label">Rallonge électrique</span>
+                    </div>
+                    <label class="switch" onclick="event.stopPropagation()">
+                        <input type="checkbox" id="has_power_extension" checked onchange="updateCardState('has_power_extension')">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="comments">Observations / Remarques (Optionnel)</label>
+                <textarea id="comments" placeholder="Signalez tout problème ou dysfonctionnement constaté sur ce poste..."></textarea>
+            </div>
+
+            <button type="submit" id="btnSubmit" class="btn-submit">
+                <span class="spinner" id="spinner"></span>
+                <span id="btnText">🔓 Déverrouiller la machine</span>
+            </button>
+
+            <div class="footer-note">
+                Assurez-vous d'effectuer la vérification avant de déverrouiller.
+            </div>
+        </form>
+    </div>
+
+    <script>
+        function toggleSwitch(id) {
+            const checkbox = document.getElementById(id);
+            checkbox.checked = !checkbox.checked;
+            updateCardState(id);
+        }
+
+        function updateCardState(id) {
+            const checkbox = document.getElementById(id);
+            const card = checkbox.closest('.check-card');
+            if (checkbox.checked) {
+                card.classList.add('checked');
+            } else {
+                card.classList.remove('checked');
+            }
+        }
+
+        function showToast(message, isSuccess = true) {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toast-message');
+            const toastIcon = document.getElementById('toast-icon');
+
+            toastMessage.textContent = message;
+            toastIcon.textContent = isSuccess ? '✅' : '❌';
+            toast.className = `toast show ${isSuccess ? 'success' : 'error'}`;
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 4000);
+        }
+
+        document.getElementById('unlockForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const btn = document.getElementById('btnSubmit');
+            const spinner = document.getElementById('spinner');
+            const btnText = document.getElementById('btnText');
+
+            const payload = {
+                machine_code: document.getElementById('machine_code').value,
+                matricule: document.getElementById('matricule').value.trim(),
+                password: document.getElementById('password').value,
+                has_mouse: document.getElementById('has_mouse').checked,
+                has_keyboard: document.getElementById('has_keyboard').checked,
+                has_power_cable: document.getElementById('has_power_cable').checked,
+                has_hdmi_cable: document.getElementById('has_hdmi_cable').checked,
+                has_power_extension: document.getElementById('has_power_extension').checked,
+                comments: document.getElementById('comments').value.trim()
+            };
+
+            // UI Loading state
+            btn.disabled = true;
+            spinner.style.display = 'inline-block';
+            btnText.textContent = 'Vérification en cours...';
+
+            try {
+                const response = await fetch('/api/unlock', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    showToast(result.message || 'Machine déverrouillée avec succès !', true);
+                    btnText.textContent = '✅ Machine Déverrouillée';
+                    btn.style.background = 'linear-gradient(135deg, #059669 0%, #10b981 100%)';
+                } else {
+                    showToast(result.message || 'Erreur lors du déverrouillage', false);
+                    btn.disabled = false;
+                    spinner.style.display = 'none';
+                    btnText.textContent = '🔓 Déverrouiller la machine';
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Impossible de contacter le serveur central.', false);
+                btn.disabled = false;
+                spinner.style.display = 'none';
+                btnText.textContent = '🔓 Déverrouiller la machine';
+            }
+        });
+    </script>
+</body>
+</html>
