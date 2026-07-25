@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Déverrouillage Poste - UPL Labo</title>
+    <title>SmartLocker UPL — Connexion & Inscription</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -13,13 +13,13 @@
             --primary-light: #1d4ed8;
             --accent: #f59e0b;
             --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #002677 100%);
-            --card-bg: rgba(255, 255, 255, 0.95);
+            --card-bg: rgba(255, 255, 255, 0.96);
             --text-main: #0f172a;
             --text-muted: #64748b;
             --border-color: #e2e8f0;
             --success: #10b981;
             --danger: #ef4444;
-            --radius: 16px;
+            --radius: 20px;
         }
 
         * {
@@ -36,17 +36,17 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 20px 16px;
+            padding: 24px 16px;
             color: var(--text-main);
         }
 
         .container {
             width: 100%;
-            max-width: 480px;
+            max-width: 520px;
             background: var(--card-bg);
-            backdrop-filter: blur(12px);
+            backdrop-filter: blur(16px);
             border-radius: var(--radius);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.2);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.2);
             overflow: hidden;
             animation: fadeIn 0.4s ease-out;
         }
@@ -56,23 +56,25 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
+        /* En-tête institutionnel */
         .header {
             background: linear-gradient(135deg, #002677 0%, #1e3a8a 100%);
-            padding: 28px 24px;
+            padding: 30px 24px 24px 24px;
             text-align: center;
             color: white;
             position: relative;
         }
 
         .header h1 {
-            font-size: 22px;
+            font-size: 21px;
             font-weight: 700;
-            letter-spacing: -0.3px;
-            margin-bottom: 6px;
+            letter-spacing: 0.2px;
+            margin-bottom: 4px;
+            text-transform: uppercase;
         }
 
         .header p {
-            font-size: 13px;
+            font-size: 13.5px;
             color: #93c5fd;
             font-weight: 400;
         }
@@ -83,10 +85,10 @@
             gap: 8px;
             background: rgba(255, 255, 255, 0.15);
             border: 1px solid rgba(255, 255, 255, 0.25);
-            padding: 6px 16px;
+            padding: 6px 18px;
             border-radius: 20px;
             margin-top: 14px;
-            font-size: 14px;
+            font-size: 13.5px;
             font-weight: 600;
             letter-spacing: 0.5px;
         }
@@ -99,17 +101,65 @@
             box-shadow: 0 0 8px var(--accent);
         }
 
+        /* Navigation par onglets (Tabs) */
+        .tabs-nav {
+            display: flex;
+            background: #f1f5f9;
+            padding: 6px;
+            gap: 6px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px 16px;
+            border: none;
+            background: transparent;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-muted);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .tab-btn.active {
+            background: #ffffff;
+            color: var(--primary);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+
+        /* Formulaires */
         .form-body {
             padding: 24px;
         }
 
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeInTab 0.3s ease-out;
+        }
+
+        @keyframes fadeInTab {
+            from { opacity: 0; transform: scale(0.98); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
         .section-title {
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.8px;
             color: var(--primary);
             margin-bottom: 14px;
+            margin-top: 10px;
             display: flex;
             align-items: center;
             gap: 8px;
@@ -126,6 +176,15 @@
             margin-bottom: 16px;
         }
 
+        .input-row {
+            display: flex;
+            gap: 12px;
+        }
+
+        .input-row .input-group {
+            flex: 1;
+        }
+
         .input-group label {
             display: block;
             font-size: 13px;
@@ -138,7 +197,7 @@
             position: relative;
         }
 
-        .input-wrapper input {
+        .input-wrapper input, .input-wrapper select, textarea {
             width: 100%;
             padding: 12px 14px 12px 40px;
             border: 1.5px solid var(--border-color);
@@ -150,7 +209,15 @@
             outline: none;
         }
 
-        .input-wrapper input:focus {
+        .input-wrapper select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+        }
+
+        .input-wrapper input:focus, .input-wrapper select:focus, textarea:focus {
             border-color: var(--primary-light);
             background: #ffffff;
             box-shadow: 0 0 0 4px rgba(29, 78, 216, 0.1);
@@ -213,7 +280,7 @@
             color: var(--text-main);
         }
 
-        /* Toggle Switch */
+        /* Switch */
         .switch {
             position: relative;
             display: inline-block;
@@ -258,24 +325,12 @@
         }
 
         textarea {
-            width: 100%;
             padding: 12px;
-            border: 1.5px solid var(--border-color);
-            border-radius: 10px;
-            font-size: 13px;
-            background: #f8fafc;
             resize: vertical;
             min-height: 70px;
-            outline: none;
-            transition: all 0.2s ease;
         }
 
-        textarea:focus {
-            border-color: var(--primary-light);
-            background: #ffffff;
-            box-shadow: 0 0 0 4px rgba(29, 78, 216, 0.1);
-        }
-
+        /* Bouton submit */
         .btn-submit {
             width: 100%;
             padding: 14px;
@@ -292,7 +347,7 @@
             justify-content: center;
             align-items: center;
             gap: 10px;
-            margin-top: 10px;
+            margin-top: 14px;
         }
 
         .btn-submit:hover {
@@ -363,128 +418,271 @@
             color: var(--text-muted);
             margin-top: 18px;
         }
+
+        .link-switch {
+            color: var(--primary-light);
+            text-decoration: underline;
+            cursor: pointer;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
 
+    <!-- Toast Notification -->
     <div id="toast" class="toast">
         <span id="toast-icon">✨</span>
         <span id="toast-message">Notification</span>
     </div>
 
     <div class="container">
+        <!-- En-tête -->
         <div class="header">
             <h1>Université Protestante de Lubumbashi</h1>
-            <p>Laboratoire Informatique — SmartLocker</p>
+            <p>Laboratoire Informatique — Système SmartLocker</p>
             <div class="machine-badge">
                 <span class="dot"></span>
-                <span id="display-pc-name">{{ pc_code }}</span>
+                <span id="display-pc-name">POSTE : {{ pc_code }}</span>
             </div>
         </div>
 
-        <form id="unlockForm" class="form-body">
-            <input type="hidden" id="machine_code" value="{{ pc_code }}">
-
-            <!-- SECTION 1: AUTHENTIFICATION -->
-            <div class="section-title">
-                1. Authentification Étudiant
-            </div>
-
-            <div class="input-group">
-                <label for="matricule">Matricule Étudiant</label>
-                <div class="input-wrapper">
-                    <span class="input-icon">👤</span>
-                    <input type="text" id="matricule" placeholder="Ex: 2024-UPL-001" required autocomplete="username">
-                </div>
-            </div>
-
-            <div class="input-group">
-                <label for="password">Mot de passe</label>
-                <div class="input-wrapper">
-                    <span class="input-icon">🔒</span>
-                    <input type="password" id="password" placeholder="••••••••" required autocomplete="current-password">
-                </div>
-            </div>
-
-            <!-- SECTION 2: CHECKLIST -->
-            <div class="section-title">
-                2. État du Matériel (Check-list)
-            </div>
-
-            <div class="checklist-grid">
-                <div class="check-card checked" onclick="toggleSwitch('has_mouse')">
-                    <div class="check-info">
-                        <span class="check-icon">🐭</span>
-                        <span class="check-label">Souris présente</span>
-                    </div>
-                    <label class="switch" onclick="event.stopPropagation()">
-                        <input type="checkbox" id="has_mouse" checked onchange="updateCardState('has_mouse')">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-
-                <div class="check-card checked" onclick="toggleSwitch('has_keyboard')">
-                    <div class="check-info">
-                        <span class="check-icon">⌨️</span>
-                        <span class="check-label">Clavier présent</span>
-                    </div>
-                    <label class="switch" onclick="event.stopPropagation()">
-                        <input type="checkbox" id="has_keyboard" checked onchange="updateCardState('has_keyboard')">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-
-                <div class="check-card checked" onclick="toggleSwitch('has_power_cable')">
-                    <div class="check-info">
-                        <span class="check-icon">🔌</span>
-                        <span class="check-label">Câble d'alimentation</span>
-                    </div>
-                    <label class="switch" onclick="event.stopPropagation()">
-                        <input type="checkbox" id="has_power_cable" checked onchange="updateCardState('has_power_cable')">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-
-                <div class="check-card checked" onclick="toggleSwitch('has_hdmi_cable')">
-                    <div class="check-info">
-                        <span class="check-icon">🖥️</span>
-                        <span class="check-label">Câble HDMI / Écran</span>
-                    </div>
-                    <label class="switch" onclick="event.stopPropagation()">
-                        <input type="checkbox" id="has_hdmi_cable" checked onchange="updateCardState('has_hdmi_cable')">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-
-                <div class="check-card checked" onclick="toggleSwitch('has_power_extension')">
-                    <div class="check-info">
-                        <span class="check-icon">⚡</span>
-                        <span class="check-label">Rallonge électrique</span>
-                    </div>
-                    <label class="switch" onclick="event.stopPropagation()">
-                        <input type="checkbox" id="has_power_extension" checked onchange="updateCardState('has_power_extension')">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-            </div>
-
-            <div class="input-group">
-                <label for="comments">Observations / Remarques (Optionnel)</label>
-                <textarea id="comments" placeholder="Signalez tout problème ou dysfonctionnement constaté sur ce poste..."></textarea>
-            </div>
-
-            <button type="submit" id="btnSubmit" class="btn-submit">
-                <span class="spinner" id="spinner"></span>
-                <span id="btnText">🔓 Déverrouiller la machine</span>
+        <!-- Onglets -->
+        <div class="tabs-nav">
+            <button class="tab-btn active" id="tabLoginBtn" onclick="switchTab('login')">
+                🔑 Se connecter
             </button>
+            <button class="tab-btn" id="tabRegisterBtn" onclick="switchTab('register')">
+                📝 Créer un compte
+            </button>
+        </div>
 
-            <div class="footer-note">
-                Assurez-vous d'effectuer la vérification avant de déverrouiller.
+        <div class="form-body">
+            
+            <!-- ================= ONGLET 1: SE CONNECTER ================= -->
+            <div id="tabLogin" class="tab-content active">
+                <form id="unlockForm">
+                    <input type="hidden" id="machine_code" value="{{ pc_code }}">
+
+                    <div class="section-title">1. Authentification Étudiant</div>
+
+                    <div class="input-group">
+                        <label for="matricule">Matricule Étudiant</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">👤</span>
+                            <input type="text" id="matricule" placeholder="Ex: 2024-UPL-001" required autocomplete="username">
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="password">Mot de passe</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">🔒</span>
+                            <input type="password" id="password" placeholder="••••••••" required autocomplete="current-password">
+                        </div>
+                    </div>
+
+                    <div class="section-title">2. État du Matériel (Check-list)</div>
+
+                    <div class="checklist-grid">
+                        <div class="check-card checked" onclick="toggleSwitch('has_mouse')">
+                            <div class="check-info">
+                                <span class="check-icon">🐭</span>
+                                <span class="check-label">Souris présente</span>
+                            </div>
+                            <label class="switch" onclick="event.stopPropagation()">
+                                <input type="checkbox" id="has_mouse" checked onchange="updateCardState('has_mouse')">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="check-card checked" onclick="toggleSwitch('has_keyboard')">
+                            <div class="check-info">
+                                <span class="check-icon">⌨️</span>
+                                <span class="check-label">Clavier présent</span>
+                            </div>
+                            <label class="switch" onclick="event.stopPropagation()">
+                                <input type="checkbox" id="has_keyboard" checked onchange="updateCardState('has_keyboard')">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="check-card checked" onclick="toggleSwitch('has_power_cable')">
+                            <div class="check-info">
+                                <span class="check-icon">🔌</span>
+                                <span class="check-label">Câble d'alimentation</span>
+                            </div>
+                            <label class="switch" onclick="event.stopPropagation()">
+                                <input type="checkbox" id="has_power_cable" checked onchange="updateCardState('has_power_cable')">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="check-card checked" onclick="toggleSwitch('has_hdmi_cable')">
+                            <div class="check-info">
+                                <span class="check-icon">🖥️</span>
+                                <span class="check-label">Câble HDMI / Écran</span>
+                            </div>
+                            <label class="switch" onclick="event.stopPropagation()">
+                                <input type="checkbox" id="has_hdmi_cable" checked onchange="updateCardState('has_hdmi_cable')">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="check-card checked" onclick="toggleSwitch('has_power_extension')">
+                            <div class="check-info">
+                                <span class="check-icon">⚡</span>
+                                <span class="check-label">Rallonge électrique</span>
+                            </div>
+                            <label class="switch" onclick="event.stopPropagation()">
+                                <input type="checkbox" id="has_power_extension" checked onchange="updateCardState('has_power_extension')">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="comments">Observations / Remarques (Optionnel)</label>
+                        <textarea id="comments" placeholder="Signalez tout problème constaté sur ce poste..."></textarea>
+                    </div>
+
+                    <button type="submit" id="btnSubmitLogin" class="btn-submit">
+                        <span class="spinner" id="spinnerLogin"></span>
+                        <span id="btnTextLogin">🔓 Déverrouiller la machine</span>
+                    </button>
+
+                    <div class="footer-note">
+                        Pas encore de compte ? <span class="link-switch" onclick="switchTab('register')">Créer un compte</span>
+                    </div>
+                </form>
             </div>
-        </form>
+
+            <!-- ================= ONGLET 2: CRÉER UN COMPTE ================= -->
+            <div id="tabRegister" class="tab-content">
+                <form id="registerForm">
+                    <div class="section-title">Identité de l'étudiant</div>
+
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label for="reg_nom">Nom</label>
+                            <div class="input-wrapper">
+                                <span class="input-icon">📛</span>
+                                <input type="text" id="reg_nom" placeholder="Ex: KABANGE" required>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label for="reg_postnom">Postnom</label>
+                            <div class="input-wrapper">
+                                <span class="input-icon">📛</span>
+                                <input type="text" id="reg_postnom" placeholder="Ex: MUKENDI">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="reg_prenom">Prénom</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">👤</span>
+                            <input type="text" id="reg_prenom" placeholder="Ex: Jonathan" required>
+                        </div>
+                    </div>
+
+                    <div class="section-title">Parcours Académique</div>
+
+                    <div class="input-group">
+                        <label for="reg_faculte">Faculté</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">🏛️</span>
+                            <select id="reg_faculte" required>
+                                <option value="" disabled selected>Sélectionner la faculté...</option>
+                                <option value="Sciences et Technologies">Sciences et Technologies</option>
+                                <option value="Sciences Économiques et Gestion">Sciences Économiques et Gestion</option>
+                                <option value="Droit">Droit</option>
+                                <option value="Médecine">Médecine</option>
+                                <option value="Polytechnique">Polytechnique</option>
+                                <option value="Théologie">Théologie</option>
+                                <option value="Sciences Sociales">Sciences Sociales</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label for="reg_filiere">Filière / Département</label>
+                            <div class="input-wrapper">
+                                <span class="input-icon">🎓</span>
+                                <input type="text" id="reg_filiere" placeholder="Ex: Informatique" required>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label for="reg_promotion">Promotion</label>
+                            <div class="input-wrapper">
+                                <span class="input-icon">📊</span>
+                                <select id="reg_promotion" required>
+                                    <option value="" disabled selected>Niveau...</option>
+                                    <option value="L1 LMD">L1 LMD</option>
+                                    <option value="L2 LMD">L2 LMD</option>
+                                    <option value="L3 LMD">L3 LMD</option>
+                                    <option value="M1">M1</option>
+                                    <option value="M2">M2</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section-title">Identifiants de connexion</div>
+
+                    <div class="input-group">
+                        <label for="reg_matricule">Matricule Officiel (Identifiant unique)</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">🆔</span>
+                            <input type="text" id="reg_matricule" placeholder="Ex: 2024-UPL-001" required>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="reg_password">Mot de passe secret</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">🔑</span>
+                            <input type="password" id="reg_password" placeholder="Créer un mot de passe secret" required minlength="4">
+                        </div>
+                    </div>
+
+                    <button type="submit" id="btnSubmitRegister" class="btn-submit">
+                        <span class="spinner" id="spinnerRegister"></span>
+                        <span id="btnTextRegister">✨ Créer mon compte étudiant</span>
+                    </button>
+
+                    <div class="footer-note">
+                        Vous avez déjà un compte ? <span class="link-switch" onclick="switchTab('login')">Se connecter</span>
+                    </div>
+                </form>
+            </div>
+
+        </div>
     </div>
 
     <script>
+        // Gestion des onglets
+        function switchTab(tabName) {
+            const loginTab = document.getElementById('tabLogin');
+            const registerTab = document.getElementById('tabRegister');
+            const loginBtn = document.getElementById('tabLoginBtn');
+            const registerBtn = document.getElementById('tabRegisterBtn');
+
+            if (tabName === 'login') {
+                loginTab.classList.add('active');
+                registerTab.classList.remove('active');
+                loginBtn.classList.add('active');
+                registerBtn.classList.remove('active');
+            } else {
+                registerTab.classList.add('active');
+                loginTab.classList.remove('active');
+                registerBtn.classList.add('active');
+                loginBtn.classList.remove('active');
+            }
+        }
+
+        // Gestion de la checklist
         function toggleSwitch(id) {
             const checkbox = document.getElementById(id);
             checkbox.checked = !checkbox.checked;
@@ -501,6 +699,7 @@
             }
         }
 
+        // Notification Toast
         function showToast(message, isSuccess = true) {
             const toast = document.getElementById('toast');
             const toastMessage = document.getElementById('toast-message');
@@ -512,15 +711,67 @@
 
             setTimeout(() => {
                 toast.classList.remove('show');
-            }, 4000);
+            }, 4500);
         }
 
+        // Soumission Inscription
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const btn = document.getElementById('btnSubmitRegister');
+            const spinner = document.getElementById('spinnerRegister');
+            const btnText = document.getElementById('btnTextRegister');
+
+            const payload = {
+                nom: document.getElementById('reg_nom').value.trim(),
+                postnom: document.getElementById('reg_postnom').value.trim(),
+                prenom: document.getElementById('reg_prenom').value.trim(),
+                faculte: document.getElementById('reg_faculte').value,
+                filiere: document.getElementById('reg_filiere').value.trim(),
+                promotion: document.getElementById('reg_promotion').value,
+                matricule: document.getElementById('reg_matricule').value.trim(),
+                password: document.getElementById('reg_password').value
+            };
+
+            btn.disabled = true;
+            spinner.style.display = 'inline-block';
+            btnText.textContent = 'Enregistrement...';
+
+            try {
+                const response = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    showToast(result.message, true);
+                    // Pré-remplir le matricule dans la connexion et changer d'onglet
+                    document.getElementById('matricule').value = payload.matricule;
+                    document.getElementById('password').focus();
+                    setTimeout(() => switchTab('login'), 1200);
+                } else {
+                    showToast(result.message || "Erreur lors de l'inscription", false);
+                }
+            } catch (err) {
+                console.error(err);
+                showToast("Impossible de contacter le serveur.", false);
+            } finally {
+                btn.disabled = false;
+                spinner.style.display = 'none';
+                btnText.textContent = '✨ Créer mon compte étudiant';
+            }
+        });
+
+        // Soumission Connexion / Déverrouillage
         document.getElementById('unlockForm').addEventListener('submit', async function(e) {
             e.preventDefault();
 
-            const btn = document.getElementById('btnSubmit');
-            const spinner = document.getElementById('spinner');
-            const btnText = document.getElementById('btnText');
+            const btn = document.getElementById('btnSubmitLogin');
+            const spinner = document.getElementById('spinnerLogin');
+            const btnText = document.getElementById('btnTextLogin');
 
             const payload = {
                 machine_code: document.getElementById('machine_code').value,
@@ -534,7 +785,6 @@
                 comments: document.getElementById('comments').value.trim()
             };
 
-            // UI Loading state
             btn.disabled = true;
             spinner.style.display = 'inline-block';
             btnText.textContent = 'Vérification en cours...';
@@ -542,9 +792,7 @@
             try {
                 const response = await fetch('/api/unlock', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
 
@@ -555,7 +803,7 @@
                     btnText.textContent = '✅ Machine Déverrouillée';
                     btn.style.background = 'linear-gradient(135deg, #059669 0%, #10b981 100%)';
                 } else {
-                    showToast(result.message || 'Erreur lors du déverrouillage', false);
+                    showToast(result.message || 'Identité inconnue ou mot de passe incorrect', false);
                     btn.disabled = false;
                     spinner.style.display = 'none';
                     btnText.textContent = '🔓 Déverrouiller la machine';
