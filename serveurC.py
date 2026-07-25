@@ -63,6 +63,64 @@ def serialize_row(row):
     return serialized
 
 
+def add_machine_record(machine_code, ip_adress=None, statut='VERROUILLEE'):
+    machine_code = (machine_code or '').strip()
+    if not machine_code:
+        raise ValueError("Le code de la machine est obligatoire.")
+
+    ip_adress = (ip_adress or '').strip() or None
+    statut = (statut or 'VERROUILLEE').strip().upper()
+
+    conn = None
+    cursor = None
+    try:
+        if is_supabase_enabled():
+            existing = supabase_fetch_machine(machine_code)
+            if existing:
+                return existing
+
+            inserted = supabase_insert('machines', {
+                'machine_code': machine_code,
+                'ip_adress': ip_adress,
+                'statut': statut
+            })
+            if inserted:
+                return inserted[0] if isinstance(inserted, list) else inserted
+            return {'machine_code': machine_code, 'ip_adress': ip_adress, 'statut': statut}
+
+        conn = get_db_connexion()
+        cursor = conn.cursor()
+
+        cursor.execute(
+            "SELECT id, machine_code, ip_adress, statut FROM machines WHERE machine_code=%s",
+            (machine_code,)
+        )
+        existing = cursor.fetchone()
+        if existing:
+            return serialize_row(existing)
+
+        cursor.execute(
+            """
+            INSERT INTO machines (machine_code, ip_adress, statut)
+            VALUES (%s, %s, %s)
+            RETURNING id, machine_code, ip_adress, statut
+            """,
+            (machine_code, ip_adress, statut)
+        )
+        row = cursor.fetchone()
+        conn.commit()
+        return serialize_row(row) if row else {'machine_code': machine_code, 'ip_adress': ip_adress, 'statut': statut}
+    except Exception:
+        if conn:
+            conn.rollback()
+        raise
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+
 def is_supabase_enabled():
     return supabase is not None
 
@@ -338,10 +396,7 @@ def unlock_machine():
 
             machine = supabase_fetch_machine(machine_code)
             if not machine:
-                machine = supabase_insert('machines', {
-                    'machine_code': machine_code,
-                    'statut': 'DEVERROUILLEE'
-                })
+                machine = add_machine_record(machine_code, statut='DEVERROUILLEE')
 
             supabase_insert('inspection', {
                 'student_id': student['id'],
@@ -370,18 +425,9 @@ def unlock_machine():
                 return jsonify({"success": False, "message": "Mot de passe incorrect."}), 401
 
             # 2. Vérification / Création automatique de la machine
-            cursor.execute("SELECT * FROM machines WHERE machine_code=%s", (machine_code,))
-            machine = cursor.fetchone()
-
+            machine = add_machine_record(machine_code, statut='DEVERROUILLEE')
             if not machine:
-                # Créer automatiquement la machine si elle n'existe pas encore dans la BDD
-                cursor.execute("""
-                    INSERT INTO machines (machine_code, statut) 
-                    VALUES (%s, 'DEVERROUILLEE') 
-                    RETURNING id, machine_code, ip_adress, statut
-                """, (machine_code,))
-                machine = cursor.fetchone()
-                conn.commit()
+                return jsonify({"success": False, "message": "Impossible de préparer la machine."}), 500
 
             # 3. Enregistrement de l'inspection dans la BDD
             cursor.execute("""
@@ -414,6 +460,27 @@ def unlock_machine():
             cursor.close()
         if conn:
             conn.close()
+
+
+@app.route('/api/admin/machines', methods=['POST'])
+def add_machine_endpoint():
+    data = request.json or {}
+    machine_code = (data.get('machine_code') or '').strip()
+    ip_adress = (data.get('ip_adress') or '').strip()
+    statut = (data.get('statut') or 'VERROUILLEE').strip().upper()
+
+    if not machine_code:
+        return jsonify({"success": False, "message": "Le code de la machine est obligatoire."}), 400
+
+    try:
+        machine = add_machine_record(machine_code, ip_adress=ip_adress, statut=statut)
+        return jsonify({
+            "success": True,
+            "message": f"Machine {machine_code} ajoutée avec succès.",
+            "machine": machine
+        })
+    except Exception as e:
+        return jsonify({"success": False, "message": f"Erreur lors de l'ajout de la machine: {str(e)}"}), 500
 
 
 @app.route('/admin', methods=['GET'])

@@ -122,10 +122,12 @@
             gap: 12px;
             align-items: center;
             margin-bottom: 18px;
+            flex-wrap: wrap;
         }
 
         .search-bar input {
             flex: 1;
+            min-width: 220px;
             padding: 14px 18px;
             border-radius: 14px;
             border: 1px solid var(--border);
@@ -134,7 +136,8 @@
             font-size: 14px;
         }
 
-        .search-bar button {
+        .search-bar button,
+        .inline-form button {
             padding: 14px 20px;
             border-radius: 14px;
             border: none;
@@ -142,6 +145,44 @@
             color: white;
             font-weight: 700;
             cursor: pointer;
+        }
+
+        .secondary-btn {
+            background: #0f172a !important;
+        }
+
+        .inline-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 12px;
+            margin-bottom: 12px;
+            padding: 16px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+        }
+
+        .inline-form input {
+            padding: 12px 14px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: white;
+            color: var(--text);
+        }
+
+        .form-message {
+            min-height: 20px;
+            margin-bottom: 12px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .form-message.success {
+            color: var(--success);
+        }
+
+        .form-message.error {
+            color: var(--danger);
         }
 
         .student-table {
@@ -247,7 +288,15 @@
             <div class="search-bar">
                 <input type="search" id="searchInput" placeholder="Rechercher par matricule, nom, filière, promotion..." />
                 <button id="searchBtn">Rechercher</button>
+                <button id="addMachineBtn" class="secondary-btn" type="button">Ajouter une machine</button>
             </div>
+
+            <form id="machineForm" class="inline-form" style="display:none;">
+                <input type="text" id="machineCodeInput" name="machine_code" placeholder="Code machine (ex. UPLAB-PC-20)" required />
+                <input type="text" id="machineIpInput" name="ip_adress" placeholder="Adresse IP (facultatif)" />
+                <button type="submit">Enregistrer</button>
+            </form>
+            <div id="machineMessage" class="form-message"></div>
 
             <div style="overflow-x:auto;">
                 <table class="student-table">
@@ -342,6 +391,39 @@
             }
         }
 
+        async function addMachine(event) {
+            event.preventDefault();
+            const messageEl = document.getElementById('machineMessage');
+            const machineCode = document.getElementById('machineCodeInput').value.trim();
+            const ipAdress = document.getElementById('machineIpInput').value.trim();
+
+            if (!machineCode) {
+                messageEl.textContent = 'Le code de la machine est obligatoire.';
+                messageEl.className = 'form-message error';
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/admin/machines', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ machine_code: machineCode, ip_adress: ipAdress })
+                });
+                const data = await res.json();
+                messageEl.textContent = data.message || 'Machine enregistrée.';
+                messageEl.className = `form-message ${data.success ? 'success' : 'error'}`;
+
+                if (data.success) {
+                    document.getElementById('machineForm').reset();
+                    fetchSummary();
+                }
+            } catch (err) {
+                console.error(err);
+                messageEl.textContent = 'Erreur lors de l’ajout de la machine.';
+                messageEl.className = 'form-message error';
+            }
+        }
+
         document.getElementById('searchBtn').addEventListener('click', () => {
             fetchStudents(document.getElementById('searchInput').value.trim());
         });
@@ -352,6 +434,16 @@
                 fetchStudents(document.getElementById('searchInput').value.trim());
             }
         });
+
+        document.getElementById('addMachineBtn').addEventListener('click', () => {
+            const form = document.getElementById('machineForm');
+            form.style.display = form.style.display === 'none' ? 'grid' : 'none';
+            if (form.style.display === 'grid') {
+                document.getElementById('machineCodeInput').focus();
+            }
+        });
+
+        document.getElementById('machineForm').addEventListener('submit', addMachine);
 
         fetchSummary();
         fetchStudents();
