@@ -1,31 +1,83 @@
-# importation de library necessaire
+import os
 import socket
+import jinja2
 from flask import Flask, request, jsonify, render_template
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from werkzeug.security import check_password_hash, generate_password_hash
 
-# initialisation de l'application Flask
-app = Flask(__name__)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# configuration de la base de donnes
+# initialisation de l'application Flask
+app = Flask(__name__, template_folder=BASE_DIR, static_folder=BASE_DIR)
+
+# Permet à Flask de trouver les fichiers templates directement à la racine '.' (hors dossier) ou dans le dossier 'templates'
+app.jinja_loader = jinja2.ChoiceLoader([
+    jinja2.FileSystemLoader(BASE_DIR),
+    jinja2.FileSystemLoader(os.path.join(BASE_DIR, 'templates'))
+])
+
+# configuration de la base de données (Supporte Render DATABASE_URL / Env Variables)
+DATABASE_URL = os.environ.get("DATABASE_URL")
+
 DB_CONFIG = {
-    "dbname": "uplab",
-    "user": "postgres",
-    "password": "Vayle123UpllabChecking2027#",
-    "host": "localhost",
-    "port": "5432"
+    "dbname": os.environ.get("DB_NAME", "uplab"),
+    "user": os.environ.get("DB_USER", "postgres"),
+    "password": os.environ.get("DB_PASSWORD", "Vayle123UpllabChecking2027#"),
+    "host": os.environ.get("DB_HOST", "localhost"),
+    "port": os.environ.get("DB_PORT", "5432")
 }
 
 # fonction et etablissement de connexion 
 def get_db_connexion():
+    if DATABASE_URL:
+        # En hébergement Render/PostgreSQL Cloud
+        return psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
     return psycopg2.connect(**DB_CONFIG, cursor_factory=RealDictCursor)
 
+# Mémoire vive des machines déverrouillées (accessible à l'agent local)
+unlocked_machines = set()
+
+# -------------Route de vérification du statut par l'agent local PC-------------
+@app.route('/api/status/<machine_code>', methods=['GET'])
+def check_machine_status(machine_code):
+    """Permet à l'agent local (agentv.py) sur le PC du labo d'interroger Render"""
+    if machine_code in unlocked_machines:
+        return jsonify({"unlocked": True, "message": "Déverrouillé"})
+    
+    conn = None
+    cursor = None
+    try:
+        conn = get_db_connexion()
+        cursor = conn.cursor()
+        cursor.execute("SELECT statut FROM machines WHERE machine_code=%s", (machine_code,))
+        machine = cursor.fetchone()
+        if machine and machine.get('statut') == 'DEVERROUILLEE':
+            unlocked_machines.add(machine_code)
+            return jsonify({"unlocked": True, "message": "Déverrouillé (BDD)"})
+    except Exception:
+        pass
+    finally:
+        if cursor: cursor.close()
+        if conn: conn.close()
+        
+    return jsonify({"unlocked": False})
+
 # -------------Route de scan QR Code (Interface Web)------------------------
+@app.route('/', methods=['GET'])
 @app.route('/scan', methods=['GET'])
 def scan_page():
     pc_code = request.args.get('pc', 'UPLAB-PC-01')
-    return render_template('scan.html', pc_code=pc_code)
+    try:
+        return render_template('scan.html', pc_code=pc_code)
+    except Exception as e:
+        # Solution de secours infaillible : lecture directe de scan.html si le loader Jinja signale une exception
+        scan_path = os.path.join(BASE_DIR, 'scan.html')
+        if not os.path.exists(scan_path):
+            scan_path = os.path.join(BASE_DIR, 'templates', 'scan.html')
+        with open(scan_path, 'r', encoding='utf-8') as f:
+            content = f.read().replace('{{ pc_code }}', pc_code)
+            return content, 200, {'Content-Type': 'text/html; charset=utf-8'}
 
 # -------------Route de deverouillages smartlocker--------------------------
 @app.route('/api/unlock', methods=['POST'])
@@ -75,14 +127,16 @@ def unlock_machine():
         cursor.execute("UPDATE machines SET statut = 'DEVERROUILLEE' WHERE id = %s", (machine['id'],))
         conn.commit()
 
-        # ----- envoie de l'ordre socket directement au pc du labo-----
-        pc_ip = machine['ip_adress']
-        socket_success = send_unlock_socket(pc_ip)
+        # Enregistrer la machine comme déverrouillée
+        if machine_code:
+            unlocked_machines.add(machine_code)
 
-        if socket_success:
-            return jsonify({"success": True, "message": f"Machine {machine_code} déverrouillée avec succès !"})
-        else:
-            return jsonify({"success": False, "message": "Inspection enregistrée mais la machine est injoignable (agent hors ligne)."})
+        # ----- envoie de l'ordre socket si possible (local IP) -----
+        pc_ip = machine.get('ip_adress')
+        if pc_ip:
+            send_unlock_socket(pc_ip)
+
+        return jsonify({"success": True, "message": f"Machine {machine_code} déverrouillée avec succès !"})
 
     except Exception as e:
         if conn:
@@ -114,5 +168,6 @@ def send_unlock_socket(ip_address, port=65432):
 
 # ----------definition du port d'ecoute---------
 if __name__ == '__main__':
-    print("Serveur de déverrouillage UPLAB démarré sur http://0.0.0.0:5000")
-    app.run(host='0.0.0.0', port=5000, debug=False)
+    port = int(os.environ.get("PORT", 5000))
+    print(f"Serveur de déverrouillage UPLAB démarré sur http://0.0.0.0:{port}")
+    app.run(host='0.0.0.0', port=port, debug=False)

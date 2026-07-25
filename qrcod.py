@@ -3,8 +3,7 @@ import qrcode
 from PIL import Image, ImageDraw, ImageFont
 
 # Configuration
-SERVER_IP = "192.168.1.100"  # IP du serveur central
-SERVER_PORT = "5000"
+RENDER_URL = "https://upllabcheckin.onrender.com"  # URL officielle hébergée sur Render
 TOTAL_MACHINES = 2
 OUTPUT_DIR = "qr_codes_labo"
 
@@ -104,7 +103,7 @@ print(f"Génération de {TOTAL_MACHINES} étiquettes/autocollants QR Code compac
 
 for i in range(1, TOTAL_MACHINES + 1):
     pc_name = f"UPLAB-PC-{i:02d}"
-    url = f"http://{SERVER_IP}:{SERVER_PORT}/scan?pc={pc_name}"
+    url = f"{RENDER_URL}/scan?pc={pc_name}"
     
     sticker = create_compact_qr_sticker(pc_name, url)
     file_path = os.path.join(OUTPUT_DIR, f"{pc_name}.png")

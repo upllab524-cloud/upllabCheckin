@@ -407,6 +407,12 @@ def serve_logo():
 def status():
     return {"unlocked": is_unlocked}
 
+import urllib.request
+import json
+
+PC_CODE = os.environ.get("PC_CODE", "UPLLAB-PC-20")
+RENDER_SERVER_URL = "https://upllabcheckin.onrender.com"
+
 def listen_socket():
     global is_unlocked
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -426,15 +432,35 @@ def listen_socket():
         except Exception:
             pass
 
+def poll_render_server():
+    global is_unlocked
+    while not is_unlocked:
+        try:
+            url = f"{RENDER_SERVER_URL}/api/status/{PC_CODE}"
+            req = urllib.request.Request(url, headers={'User-Agent': 'SmartLockerAgent/1.0'})
+            with urllib.request.urlopen(req, timeout=3) as resp:
+                if resp.status == 200:
+                    data = json.loads(resp.read().decode('utf-8'))
+                    if data.get('unlocked'):
+                        is_unlocked = True
+                        subprocess.run(["taskkill", "/F", "/IM", "msedge.exe"], capture_output=True)
+                        break
+        except Exception:
+            pass
+        time.sleep(2)
+
 if __name__ == '__main__':
-    # 1. Lancer l'écoute Socket dans un thread
+    # 1. Lancer l'écoute Socket locale
     threading.Thread(target=listen_socket, daemon=True).start()
     
-    # 2. Ouvrir Edge en mode Kiosk plein écran sur la page Flask locale
+    # 2. Lancer le sondage Cloud (Render)
+    threading.Thread(target=poll_render_server, daemon=True).start()
+    
+    # 3. Ouvrir Edge en mode Kiosk plein écran sur la page Flask locale
     threading.Thread(target=lambda: (
         time.sleep(1),
         subprocess.run(["start", "msedge", "--kiosk", "http://localhost:5001", "--edge-kiosk-type=fullscreen"], shell=True)
     ), daemon=True).start()
 
-    # 3. Démarrer le serveur Flask de l'agent PC
+    # 4. Démarrer le serveur Flask de l'agent PC
     app.run(port=5001)
