@@ -247,6 +247,37 @@
             text-align: center;
             color: var(--muted);
         }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .section-header h2 {
+            margin: 0;
+        }
+
+        .table-actions button {
+            padding: 8px 10px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 700;
+            color: white;
+        }
+
+        .table-actions .edit-btn {
+            background: var(--primary);
+            margin-right: 8px;
+        }
+
+        .table-actions .delete-btn {
+            background: var(--danger);
+        }
     </style>
 </head>
 <body>
@@ -313,6 +344,42 @@
                     </thead>
                     <tbody id="studentRows">
                         <tr><td colspan="7" class="empty-state">Chargement des étudiants...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="card">
+            <div class="section-header">
+                <h2>Machines enregistrées</h2>
+            </div>
+
+            <form id="machineEditForm" class="inline-form" style="display:none;">
+                <input type="hidden" id="machineIdInput" />
+                <input type="text" id="machineCodeEditInput" placeholder="Code machine" required />
+                <input type="text" id="machineIpEditInput" placeholder="Adresse IP (facultatif)" />
+                <select id="machineStatusEditInput">
+                    <option value="VERROUILLEE">VERROUILLEE</option>
+                    <option value="DEVERROUILLEE">DEVERROUILLEE</option>
+                </select>
+                <div class="search-bar" style="margin:0;">
+                    <button type="submit">Enregistrer</button>
+                    <button type="button" id="cancelMachineEditBtn" class="secondary-btn">Annuler</button>
+                </div>
+            </form>
+
+            <div style="overflow-x:auto;">
+                <table class="student-table">
+                    <thead>
+                        <tr>
+                            <th>Code machine</th>
+                            <th>Adresse IP</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="machineRows">
+                        <tr><td colspan="4" class="empty-state">Chargement des machines...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -416,11 +483,115 @@
                 if (data.success) {
                     document.getElementById('machineForm').reset();
                     fetchSummary();
+                    fetchMachines();
                 }
             } catch (err) {
                 console.error(err);
                 messageEl.textContent = 'Erreur lors de l’ajout de la machine.';
                 messageEl.className = 'form-message error';
+            }
+        }
+
+        async function fetchMachines() {
+            const tbody = document.getElementById('machineRows');
+            tbody.innerHTML = '<tr><td colspan="4" class="empty-state">Chargement des machines...</td></tr>';
+
+            try {
+                const res = await fetch('/api/admin/machines');
+                const data = await res.json();
+                if (!data.success) {
+                    tbody.innerHTML = `<tr><td colspan="4" class="empty-state">Erreur: ${data.message}</td></tr>`;
+                    return;
+                }
+
+                if (!data.machines.length) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="empty-state">Aucune machine enregistrée.</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = data.machines.map(machine => `
+                    <tr>
+                        <td>${machine.machine_code || '-'}</td>
+                        <td>${machine.ip_adress || '-'}</td>
+                        <td>${machine.statut || '-'}</td>
+                        <td class="table-actions">
+                            <button class="edit-btn" type="button" data-id="${machine.id}" data-code="${machine.machine_code || ''}" data-ip="${machine.ip_adress || ''}" data-statut="${machine.statut || ''}">Modifier</button>
+                            <button class="delete-btn" type="button" data-delete-id="${machine.id}">Supprimer</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                console.error(err);
+                tbody.innerHTML = '<tr><td colspan="4" class="empty-state">Erreur de connexion au serveur.</td></tr>';
+            }
+        }
+
+        function showMachineForm(machine = null) {
+            const form = document.getElementById('machineEditForm');
+            const idInput = document.getElementById('machineIdInput');
+            const codeInput = document.getElementById('machineCodeEditInput');
+            const ipInput = document.getElementById('machineIpEditInput');
+            const statusInput = document.getElementById('machineStatusEditInput');
+
+            if (machine) {
+                idInput.value = machine.id;
+                codeInput.value = machine.machine_code || '';
+                ipInput.value = machine.ip_adress || '';
+                statusInput.value = machine.statut || 'VERROUILLEE';
+            } else {
+                idInput.value = '';
+                codeInput.value = '';
+                ipInput.value = '';
+                statusInput.value = 'VERROUILLEE';
+            }
+
+            form.style.display = 'grid';
+            codeInput.focus();
+        }
+
+        async function saveMachine(event) {
+            event.preventDefault();
+            const id = document.getElementById('machineIdInput').value;
+            const payload = {
+                machine_code: document.getElementById('machineCodeEditInput').value.trim(),
+                ip_adress: document.getElementById('machineIpEditInput').value.trim(),
+                statut: document.getElementById('machineStatusEditInput').value
+            };
+
+            if (!payload.machine_code) {
+                return;
+            }
+
+            try {
+                const res = await fetch(`/api/admin/machines/${id || ''}`, {
+                    method: id ? 'PUT' : 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('machineEditForm').style.display = 'none';
+                    fetchMachines();
+                    fetchSummary();
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function deleteMachine(machineId) {
+            if (!confirm('Supprimer cette machine ?')) {
+                return;
+            }
+            try {
+                const res = await fetch(`/api/admin/machines/${machineId}`, { method: 'DELETE' });
+                const data = await res.json();
+                if (data.success) {
+                    fetchMachines();
+                    fetchSummary();
+                }
+            } catch (err) {
+                console.error(err);
             }
         }
 
@@ -444,9 +615,32 @@
         });
 
         document.getElementById('machineForm').addEventListener('submit', addMachine);
+        document.getElementById('machineEditForm').addEventListener('submit', saveMachine);
+        document.getElementById('cancelMachineEditBtn').addEventListener('click', () => {
+            document.getElementById('machineEditForm').style.display = 'none';
+        });
+
+        document.getElementById('machineRows').addEventListener('click', (event) => {
+            const editButton = event.target.closest('.edit-btn');
+            if (editButton) {
+                showMachineForm({
+                    id: editButton.dataset.id,
+                    machine_code: editButton.dataset.code,
+                    ip_adress: editButton.dataset.ip,
+                    statut: editButton.dataset.statut
+                });
+                return;
+            }
+
+            const deleteButton = event.target.closest('.delete-btn');
+            if (deleteButton) {
+                deleteMachine(deleteButton.dataset.deleteId);
+            }
+        });
 
         fetchSummary();
         fetchStudents();
+        fetchMachines();
     </script>
 </body>
 </html>

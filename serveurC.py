@@ -462,6 +462,29 @@ def unlock_machine():
             conn.close()
 
 
+@app.route('/api/admin/machines', methods=['GET'])
+def list_machines_endpoint():
+    try:
+        if is_supabase_enabled():
+            result = supabase.table('machines').select('*').order('id', desc=False).execute()
+            machines = [serialize_row(row) for row in (result.data or [])]
+            return jsonify({"success": True, "machines": machines})
+
+        conn = get_db_connexion()
+        cursor = conn.cursor()
+        cursor.execute("SELECT id, machine_code, ip_adress, statut FROM machines ORDER BY id ASC")
+        rows = cursor.fetchall()
+        machines = [serialize_row(row) for row in rows]
+        return jsonify({"success": True, "machines": machines})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+    finally:
+        if 'cursor' in locals() and cursor:
+            cursor.close()
+        if 'conn' in locals() and conn:
+            conn.close()
+
+
 @app.route('/api/admin/machines', methods=['POST'])
 def add_machine_endpoint():
     data = request.json or {}
@@ -481,6 +504,71 @@ def add_machine_endpoint():
         })
     except Exception as e:
         return jsonify({"success": False, "message": f"Erreur lors de l'ajout de la machine: {str(e)}"}), 500
+
+
+@app.route('/api/admin/machines/<int:machine_id>', methods=['PUT'])
+def update_machine_endpoint(machine_id):
+    data = request.json or {}
+    machine_code = (data.get('machine_code') or '').strip()
+    ip_adress = (data.get('ip_adress') or '').strip()
+    statut = (data.get('statut') or 'VERROUILLEE').strip().upper()
+
+    if not machine_code:
+        return jsonify({"success": False, "message": "Le code de la machine est obligatoire."}), 400
+
+    try:
+        if is_supabase_enabled():
+            result = supabase.table('machines').update({
+                'machine_code': machine_code,
+                'ip_adress': ip_adress or None,
+                'statut': statut
+            }).eq('id', machine_id).execute()
+            machine = (result.data or [None])[0]
+            return jsonify({"success": True, "message": "Machine mise à jour.", "machine": serialize_row(machine) if machine else None})
+
+        conn = get_db_connexion()
+        cursor = conn.cursor()
+        cursor.execute(
+            "UPDATE machines SET machine_code=%s, ip_adress=%s, statut=%s WHERE id=%s RETURNING id, machine_code, ip_adress, statut",
+            (machine_code, ip_adress or None, statut, machine_id)
+        )
+        row = cursor.fetchone()
+        conn.commit()
+        return jsonify({"success": True, "message": "Machine mise à jour.", "machine": serialize_row(row) if row else None})
+    except Exception as e:
+        if 'conn' in locals() and conn:
+            conn.rollback()
+        return jsonify({"success": False, "message": f"Erreur lors de la mise à jour: {str(e)}"}), 500
+    finally:
+        if 'cursor' in locals() and cursor:
+            cursor.close()
+        if 'conn' in locals() and conn:
+            conn.close()
+
+
+@app.route('/api/admin/machines/<int:machine_id>', methods=['DELETE'])
+def delete_machine_endpoint(machine_id):
+    try:
+        if is_supabase_enabled():
+            supabase.table('inspection').delete().eq('machine_id', machine_id).execute()
+            supabase.table('machines').delete().eq('id', machine_id).execute()
+            return jsonify({"success": True, "message": "Machine supprimée."})
+
+        conn = get_db_connexion()
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM inspection WHERE machine_id=%s", (machine_id,))
+        cursor.execute("DELETE FROM machines WHERE id=%s", (machine_id,))
+        conn.commit()
+        return jsonify({"success": True, "message": "Machine supprimée."})
+    except Exception as e:
+        if 'conn' in locals() and conn:
+            conn.rollback()
+        return jsonify({"success": False, "message": f"Erreur lors de la suppression: {str(e)}"}), 500
+    finally:
+        if 'cursor' in locals() and cursor:
+            cursor.close()
+        if 'conn' in locals() and conn:
+            conn.close()
 
 
 @app.route('/admin', methods=['GET'])
