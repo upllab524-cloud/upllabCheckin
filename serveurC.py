@@ -7,19 +7,18 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 from werkzeug.security import check_password_hash, generate_password_hash
 from dotenv import load_dotenv
-
-load_dotenv()
-
 from supabase import Client, create_client
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY") or os.environ.get("SUPABASE_ANON_KEY")
+SUPABASE_DATABASE_URL = os.environ.get("SUPABASE_DATABASE_URL") or os.environ.get("DATABASE_URL")
 
 supabase = None
 if SUPABASE_URL and SUPABASE_KEY:
     supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Initialisation de l'application Flask
 app = Flask(__name__, template_folder=BASE_DIR, static_folder=BASE_DIR)
@@ -42,7 +41,7 @@ DB_CONFIG = {
 }
 
 def get_db_connexion():
-    db_url = os.environ.get("DATABASE_URL") or os.environ.get("SUPABASE_DATABASE_URL")
+    db_url = os.environ.get("DATABASE_URL") or os.environ.get("SUPABASE_DATABASE_URL") or SUPABASE_DATABASE_URL
     if db_url:
         # Supabase et Heroku utilisent parfois postgres://, psycopg2 attend postgresql://
         if db_url.startswith("postgres://"):
@@ -100,6 +99,9 @@ def supabase_insert(table, record):
 
 def init_db():
     """Initialise la structure de la base de données au démarrage si nécessaire"""
+    if is_supabase_enabled() and not SUPABASE_DATABASE_URL:
+        print("[BDD] Supabase activé sans URL PostgreSQL. Ignorer l'initialisation locale.")
+        return
     conn = None
     cursor = None
     try:
