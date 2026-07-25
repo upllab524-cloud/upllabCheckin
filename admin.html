@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard — UPLAB SmartLocker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #eef2ff;
+            --card: #ffffff;
+            --surface: #f8fafc;
+            --border: #dbeafe;
+            --text: #0f172a;
+            --muted: #475569;
+            --primary: #1d4ed8;
+            --primary-soft: #eff6ff;
+            --success: #059669;
+            --danger: #dc2626;
+            --radius: 24px;
+            --shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(180deg, #eef2ff 0%, #f8fafc 100%);
+            color: var(--text);
+            padding: 24px;
+        }
+
+        .page {
+            max-width: 1280px;
+            margin: 0 auto;
+            display: grid;
+            gap: 24px;
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 24px 28px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+
+        .header-title {
+            display: grid;
+            gap: 10px;
+        }
+
+        .header-title h1 {
+            font-size: 26px;
+            letter-spacing: -0.4px;
+        }
+
+        .header-title p {
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-actions a {
+            text-decoration: none;
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            box-shadow: var(--shadow);
+        }
+
+        .card h2 {
+            font-size: 16px;
+            margin-bottom: 16px;
+            color: var(--muted);
+        }
+
+        .metric {
+            font-size: 40px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .metric small {
+            display: block;
+            margin-top: 10px;
+            color: var(--muted);
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .search-bar {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+
+        .search-bar input {
+            flex: 1;
+            padding: 14px 18px;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            font-size: 14px;
+        }
+
+        .search-bar button {
+            padding: 14px 20px;
+            border-radius: 14px;
+            border: none;
+            background: var(--primary);
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .student-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 720px;
+        }
+
+        .student-table thead tr {
+            background: var(--surface);
+        }
+
+        .student-table th,
+        .student-table td {
+            padding: 16px 14px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .student-table th {
+            color: var(--muted);
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .student-table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .badge.active {
+            background: #dbf1ea;
+            color: var(--success);
+        }
+
+        .badge.inactive {
+            background: #fee2e2;
+            color: var(--danger);
+        }
+
+        .meta-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .empty-state {
+            padding: 36px;
+            text-align: center;
+            color: var(--muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <header>
+            <div class="header-title">
+                <h1>Dashboard Admin — UPLAB SmartLocker</h1>
+                <p>Gestion des étudiants et suivi des déverrouillages.</p>
+            </div>
+            <div class="header-actions">
+                <a href="/scan">Retour à l'interface de scan</a>
+            </div>
+        </header>
+
+        <section class="summary-grid">
+            <div class="card">
+                <h2>Étudiants inscrits</h2>
+                <div class="metric" id="metricStudents">0</div>
+                <small>Total des comptes</small>
+            </div>
+            <div class="card">
+                <h2>Étudiants actifs</h2>
+                <div class="metric" id="metricActive">0</div>
+                <small>Comptes actifs</small>
+            </div>
+            <div class="card">
+                <h2>Machines enregistrées</h2>
+                <div class="metric" id="metricMachines">0</div>
+                <small>Postes disponibles</small>
+            </div>
+            <div class="card">
+                <h2>Inspections</h2>
+                <div class="metric" id="metricInspections">0</div>
+                <small>Contrôles réalisés</small>
+            </div>
+        </section>
+
+        <section class="card">
+            <div class="search-bar">
+                <input type="search" id="searchInput" placeholder="Rechercher par matricule, nom, filière, promotion..." />
+                <button id="searchBtn">Rechercher</button>
+            </div>
+
+            <div style="overflow-x:auto;">
+                <table class="student-table">
+                    <thead>
+                        <tr>
+                            <th>Matricule</th>
+                            <th>Nom complet</th>
+                            <th>Faculté</th>
+                            <th>Filière</th>
+                            <th>Promotion</th>
+                            <th>Statut</th>
+                            <th>Créé le</th>
+                        </tr>
+                    </thead>
+                    <tbody id="studentRows">
+                        <tr><td colspan="7" class="empty-state">Chargement des étudiants...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        async function fetchSummary() {
+            try {
+                const res = await fetch('/api/admin/summary');
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('metricStudents').textContent = data.summary.total_students;
+                    document.getElementById('metricActive').textContent = data.summary.active_students;
+                    document.getElementById('metricMachines').textContent = data.summary.total_machines;
+                    document.getElementById('metricInspections').textContent = data.summary.total_inspections;
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function formatDate(value) {
+            if (!value) return '-';
+            const date = new Date(value);
+            return date.toLocaleDateString('fr-FR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        async function fetchStudents(query = '') {
+            let url = '/api/admin/students';
+            if (query) {
+                url += '?q=' + encodeURIComponent(query);
+            }
+
+            const tbody = document.getElementById('studentRows');
+            tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Chargement des étudiants...</td></tr>';
+
+            try {
+                const res = await fetch(url);
+                const data = await res.json();
+                if (!data.success) {
+                    tbody.innerHTML = `<tr><td colspan="7" class="empty-state">Erreur: ${data.message}</td></tr>`;
+                    return;
+                }
+
+                if (!data.students.length) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Aucun étudiant trouvé.</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = data.students.map(student => {
+                    const fullName = [student.prenom, student.nom, student.postnom].filter(Boolean).join(' ');
+                    const statusClass = student.is_active ? 'active' : 'inactive';
+                    const statusText = student.is_active ? 'Actif' : 'Inactif';
+                    return `
+                        <tr>
+                            <td>${student.matricule || '-'}</td>
+                            <td>${fullName || '-'}</td>
+                            <td>${student.faculte || '-'}</td>
+                            <td>${student.filiere || '-'}</td>
+                            <td>${student.promotion || '-'}</td>
+                            <td><span class="badge ${statusClass}">${statusText}</span></td>
+                            <td>${formatDate(student.created_at)}</td>
+                        </tr>
+                    `;
+                }).join('');
+            } catch (err) {
+                console.error(err);
+                tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Erreur de connexion au serveur.</td></tr>';
+            }
+        }
+
+        document.getElementById('searchBtn').addEventListener('click', () => {
+            fetchStudents(document.getElementById('searchInput').value.trim());
+        });
+
+        document.getElementById('searchInput').addEventListener('keypress', e => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                fetchStudents(document.getElementById('searchInput').value.trim());
+            }
+        });
+
+        fetchSummary();
+        fetchStudents();
+    </script>
+</body>
+</html>
